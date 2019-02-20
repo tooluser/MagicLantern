@@ -147,10 +147,11 @@ void http_server_setup() {
   restHandler.on("/api/power/on", POST(handlePowerOn));
   restHandler.on("/api/power/off", POST(handlePowerOff));
 
-  restHandler.on("/api/cycle/on", POST(handleCycleOn));
-  restHandler.on("/api/cycle/off", POST(handleCycleOff));
-  
-  restHandler.on("/api/echo/:msg(string|integer)", GET(handleEcho) );
+  restHandler.on("/api/mode/cycle", POST(handleModeCycle));
+  restHandler.on("/api/mode/cycle/pause", POST(handleModeCyclePause));
+  restHandler.on("/api/mode/fire", POST(handleModeFire));
+  restHandler.on("/api/mode/static", POST(handleModeStatic));
+  restHandler.on("/api/mode/off", POST(handleModeOff));
 }
 
 /**  Webserver Functions **/
@@ -167,15 +168,35 @@ int handlePowerOff(RestRequest& request) {
   return 200;
 }
 
-int handleCycleOn(RestRequest& request) {
+int handleModeCycle(RestRequest& request) {
   cycle_mode_on = true;
   request.response["cycle"] = "on";
   return 200;
 }
 
-int handleCycleOff(RestRequest& request) {
+int handleModeCyclePause(RestRequest& request) {
   cycle_mode_on = false;
-  request.response["cycle"] = "off";
+  request.response["cycle"] = "paused";
+  return 200;
+}
+
+int handleModeFire(RestRequest& request) {
+  cycle_mode_on = false;
+  neopixel_ring.setMode(FX_MODE_FIRE_FLICKER_INTENSE);
+  request.response["mode"] = "fire";
+  return 200;
+}
+
+int handleModeStatic(RestRequest& request) {
+  cycle_mode_on = false;
+  request.response["mode"] = "static";
+  return 200;
+}
+
+int handleModeOff(RestRequest& request) {
+  cycle_mode_on = false;
+  neopixel_ring.stop();
+  request.response["mode"] = "off";
   return 200;
 }
 
