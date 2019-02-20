@@ -127,7 +127,7 @@ void wifi_setup() {
 }
 
 void neopixel_ring_setup() {
-	neopixel_ring.init();
+  neopixel_ring.init();
   neopixel_ring.setMode(DEFAULT_MODE);
   neopixel_ring.setColor(DEFAULT_COLOR);
   neopixel_ring.setSpeed(DEFAULT_SPEED);
