@@ -86,7 +86,7 @@ void loop() {
     last_wifi_check_time = now;
   }
 
-  if(cycle_mode_on && (now - cycle_last_change_time > 10000)) { // cycle effect mode every 10 seconds
+  if(cycle_mode_on && (now - cycle_last_change_time > 10000)) {
     uint8_t next_mode = (neopixel_ring.getMode() + 1) % neopixel_ring.getModeCount();
     neopixel_ring.setMode(next_mode);
     Serial.print("mode is "); Serial.println(neopixel_ring.getModeName(neopixel_ring.getMode()));
@@ -94,9 +94,6 @@ void loop() {
   }
 }
 
-/*
- * Connect to WiFi. If no connection is made within WIFI_TIMEOUT, ESP gets reset.
- */
 void wifi_setup() {
   Serial.println();
   Serial.print("Connecting to ");
@@ -156,22 +153,7 @@ void http_server_setup() {
   restHandler.on("/api/echo/:msg(string|integer)", GET(handleEcho) );
 }
 
-/* #####################################################
-#  Webserver Functions
-##################################################### */
-
-int handleEcho(RestRequest& request) {
-  String s("Hello ");
-    auto msg = request["msg"];
-    if(msg.isString())
-      s += msg.toString();
-    else {
-      s += '#';
-      s += (long)msg;
-    }
-    request.response["reply"] = s;
-    return 200;
-}
+/**  Webserver Functions **/
 
 int handlePowerOn(RestRequest& request) {
   neopixel_ring.start();
