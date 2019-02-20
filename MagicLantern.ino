@@ -5,6 +5,8 @@
 #include <Restfully.h>
 #include "configuration.h"
 
+// With gratitude to kitesurfer's webserver example -  https://github.com/kitesurfer1404/WS2812FX/tree/master/examples
+
 // See https://github.com/esp8266/Arduino/issues/263
 #define min(a,b) ((a)<(b)?(a):(b))
 #define max(a,b) ((a)>(b)?(a):(b))
@@ -51,13 +53,13 @@ void setup(){
 
   Serial.println("NeoPixel Ring initializing...");
   neopixel_ring_setup();
-  
+
   Serial.println("Wifi initializing...");
   wifi_setup();
- 
+
   Serial.println("HTTP server initializing...");
   http_server_setup();
-	
+
   server.begin();
   Serial.println("HTTP server started.");
 
@@ -101,7 +103,7 @@ void wifi_setup() {
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   WiFi.mode(WIFI_STA);
-  #ifdef STATIC_IP  
+  #ifdef STATIC_IP
     WiFi.config(ip, gateway, subnet);
   #endif
 
@@ -120,7 +122,7 @@ void wifi_setup() {
   }
 
   Serial.println("");
-  Serial.println("WiFi connected");  
+  Serial.println("WiFi connected");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   Serial.println();
