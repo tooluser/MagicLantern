@@ -52,13 +52,13 @@ void setup(){
   Serial.println("Starting...");
 
   Serial.println("NeoPixel Ring initializing...");
-  neopixel_ring_setup();
+  setup_neopixel_ring();
 
   Serial.println("Wifi initializing...");
-  wifi_setup();
+  setup_wifi();
 
   Serial.println("HTTP server initializing...");
-  http_server_setup();
+  setup_http_server();
 
   server.begin();
   Serial.println("HTTP server started.");
@@ -81,7 +81,7 @@ void loop() {
     Serial.print("Checking WiFi... ");
     if(WiFi.status() != WL_CONNECTED) {
       Serial.println("WiFi connection lost. Reconnecting...");
-      wifi_setup();
+      setup_wifi();
     } else {
       Serial.println("OK");
     }
@@ -96,7 +96,7 @@ void loop() {
   }
 }
 
-void wifi_setup() {
+void setup_wifi() {
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(WIFI_SSID);
@@ -128,7 +128,7 @@ void wifi_setup() {
   Serial.println();
 }
 
-void neopixel_ring_setup() {
+void setup_neopixel_ring() {
   neopixel_ring.init();
   neopixel_ring.setMode(DEFAULT_MODE);
   neopixel_ring.setColor(DEFAULT_COLOR);
@@ -137,7 +137,7 @@ void neopixel_ring_setup() {
   neopixel_ring.stop();
 }
 
-void http_server_setup() {
+void setup_http_server() {
   server.addHandler(&optionsRequestHandler);
   server.addHandler(&restHandler);
 
