@@ -131,27 +131,44 @@ private createChildDevices() {
 
 def temperatureDidChangeHandler(evt) {
 	log.debug("+++++ temperatureDidChangeHandler ${evt} - ${evt.name} - ${evt.value}")
+	state.temperature = evt.value as Integer
 	if (temperatureModeOn()) {
-		if (evt.value >= 80 && evt.value < heatedTemperatureThreshold) {
-			lanternDevice().setBrightness(brightnessForTemperature(evt.value))
-		} else if (evt.value > heatedTemperatureThreshold) {
-			lanternDevice().setModePulse()
-			lanternDevice().setBrightness(100)
-		} else {
-			// Cold.
-			lanternDevice().setBrightness(23)
-			lanternDevice().setModeStatic()
-		}
+		configureForTemperatureMode()
 	}
 }
 
 def heaterSwitchDidChangeHandler(evt) {
 	log.debug("+++++ heaterSwitchDidChangeHandler ${evt} - ${evt.name} - ${evt.value}")
+	state.heaterSwitchState = evt.value
 	if (temperatureModeOn()) {
 		if (evt.value == "on") {
 			lanternDevice().setModeFire()
-			lanternDevice().setBrightness(100)
+			configureForTemperatureMode()
 		}
+	}
+}
+
+private configureForTemperatureMode() {
+	log.debug("[Configuring for temperature ${state.temperature} against threshold of ${heatedTemperatureThreshold}]")
+
+	if (heaterSwitchOn()) {
+		lanternDevice().setModeFire()
+		lanternDevice().setBrightness(brightnessForTemperature(state.temperature))
+		return
+	}
+
+	Integer threshold = heatedTemperatureThreshold as Integer
+	if (state.temperature > threshold) {
+		log.debug(" - [Fully heated, pulse]")
+		lanternDevice().setModePulse()
+		lanternDevice().setBrightness(100)
+	} else if (state.temperature >= 50 && state.temperature < threshold) {
+		log.debug(" - [Middle mode, brightness]")
+		lanternDevice().setBrightness(brightnessForTemperature(state.temperature))
+	} else {
+		log.debug(" - [Cold]")
+		lanternDevice().setBrightness(23)
+		lanternDevice().setModeStatic()
 	}
 }
 
@@ -162,14 +179,15 @@ def List childOn(dni)  {
 			lanternDevice().on()
 			break
 		case fireModeSwitchDNI():
+			state.mode = "fire"
 			// Need to delay these? Perhaps.
 			lanternDevice().setBrightness(100)
 			lanternDevice().setModeFire()
 			lanternDevice().on()
-
 			temperatureModeSwitch.off()
 			break
 		case temperatureModeSwitchDNI():
+			state.mode = "temperature"
 			fireModeSwitch().off() // Yes this is generalizable. Shoot me.
 			lanternDevice().on()
 			// need to setBrightnessForTemperature here (which may be off)
@@ -180,7 +198,7 @@ def List childOn(dni)  {
 }
 
 def List childOff(dni)  {
-	logDebug("childOff dni=${dni}")
+	log.debug("childOff dni=${dni}")
 	switch (dni) {
 		case powerSwitchDNI():
 			lanternDevice().off();
@@ -191,7 +209,11 @@ def List childOff(dni)  {
 }
 
 private temperatureModeOn() {
-	temperatureModeSwitch().currentValue("switch") == "on"
+	state.mode == "temperature"
+}
+
+private heaterSwitchOn() {
+	state.heaterSwitchState == "on"
 }
 
 private brightnessForTemperature(temperature) {

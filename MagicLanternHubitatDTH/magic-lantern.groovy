@@ -25,7 +25,10 @@ metadata {
 		capability "Initialize"
 
 		command "setBrightness",            [ "number" ] // 0 - 255
-		command "setAutocycleOn"
+		command "setModePulse"
+		command "setModeStatic"
+		command "setModeCycle"
+		command "setModeFire"
 		// command "sendPreset",            ["number", "number"]       // 0 (off), 1-20 (other presets)
 
 		// attribute "currentPreset", "number" // 0 (off), 1-20 (other presets)
@@ -80,7 +83,7 @@ def setModePulse() {
 def setModeStatic() {
 	sendEvent(name: "mode", value: "static")
 	logDebug( "MagicLantern set to static" )
-	sendPost("/api/mode/pulse", [mode: "static"])
+	sendPost("/api/mode/static", [mode: "static"])
 }
 
 def setModeCycle() {
