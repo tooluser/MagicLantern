@@ -29,11 +29,6 @@ metadata {
 		command "setModeStatic"
 		command "setModeCycle"
 		command "setModeFire"
-		// command "sendPreset",            ["number", "number"]       // 0 (off), 1-20 (other presets)
-
-		// attribute "currentPreset", "number" // 0 (off), 1-20 (other presets)
-		// attribute "presetSpeed", "number" // 0 - 100
-		// attribute "whiteLevel", "number"
 	}
 
 	preferences {
@@ -141,19 +136,6 @@ def postCallbackMethod(response, data) {
 	logDebug("----- postCallbackMethod ${response} - ${data}")
 	logDebug "Callback: ${response.status} - ${response.errorData}"
 }
-
-// // ------------------- Helper Functions ------------------------- //
-//
-// def powerOnWithChanges( append=false ){
-// 	// If the device is off and light settings change, turn it on (if user settings apply)
-// 	if(append){
-// 		return settings.powerOnBrightnessChange ? ( [0x71, 0x23, 0x0F, 0xA3] ) : null
-// 	}
-// 	else{
-// 		settings.powerOnBrightnessChange ? ( device.currentValue("status") != "on" ? on() : null ) : null
-// 	}
-// }
-//
 
 def parse (response) {
 	// Parse data received back from this device
