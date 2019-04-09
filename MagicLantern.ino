@@ -24,7 +24,7 @@ void srv_handle_not_found();
 #define max(a,b) ((a)>(b)?(a):(b))
 
 #define LED_PIN 14
-#define LED_COUNT 12
+#define LED_COUNT 24
 
 #define WIFI_TIMEOUT 30000
 #define HTTP_PORT 80
