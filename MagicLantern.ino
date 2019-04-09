@@ -169,7 +169,7 @@ int handleModeFire(RestRequest& request) {
   return 200;
 }
 
-int handleModePulse(Request& request) {
+int handleModePulse(RestRequest& request) {
   cycle_mode_on = false;
   neopixel_ring.setMode(FX_MODE_BREATH);
   request.response["mode"] = "pulse";
