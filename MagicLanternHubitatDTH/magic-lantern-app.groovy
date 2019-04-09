@@ -45,7 +45,6 @@ def initialize() {
 	log.debug "Temperature Sensor Linked: " + temperatureSensor
 	log.debug "Heater Switch Linked: " + heaterSwitch
 	createChildDevices()
-	getChildDevice()
 
 	// Push configuration to child
 	lanternDevice().setIPAddress(deviceIP)
@@ -63,57 +62,65 @@ def uninstalled() {
 
 private createChildDevices() {
 	try {
-		addChildDevice(
-			"InovelliUSA",
-			"Switch Child Device",
-			powerSwitchDNI(),
-			null,
-			[
-				isComponent: true,
-				name: "Magic Lantern - On/Off Switch",
-				label: "Magic Lantern Power",
-				completedSetup: true
-			]
-		)
+		if(!powerSwitch()) {
+			addChildDevice(
+				"InovelliUSA",
+				"Switch Child Device",
+				powerSwitchDNI(),
+				null,
+				[
+					isComponent   : true,
+					name          : "Magic Lantern - On/Off Switch",
+					label         : "Magic Lantern Power",
+					completedSetup: true
+				]
+			)
+		}
 
-		addChildDevice(
-			"InovelliUSA",
-			"Switch Child Device",
-			fireModeSwitchDNI(),
-			null,
-			[
-				isComponent: true,
-				name: "Magic Lantern - Fire Mode",
-				label: "Magic Lantern Fire Mode",
-				completedSetup: true
-			]
-		)
+		if(!fireModeSwitch()) {
+			addChildDevice(
+				"InovelliUSA",
+				"Switch Child Device",
+				fireModeSwitchDNI(),
+				null,
+				[
+					isComponent   : true,
+					name          : "Magic Lantern - Fire Mode",
+					label         : "Magic Lantern Fire Mode",
+					completedSetup: true
+				]
+			)
+		}
 
-		addChildDevice(
-			"InovelliUSA",
-			"Switch Child Device",
-			temperatureModeSwitchDNI(),
-			null,
-			[
-				isComponent: true,
-				name: "Magic Lantern - Temperature Mode",
-				label: "Magic Lantern Temperature Mode",
-				completedSetup: true
-			]
-		)
+		if(!temperatureModeSwitch()) {
+			addChildDevice(
+				"InovelliUSA",
+				"Switch Child Device",
+				temperatureModeSwitchDNI(),
+				null,
+				[
+					isComponent   : true,
+					name          : "Magic Lantern - Temperature Mode",
+					label         : "Magic Lantern Temperature Mode",
+					completedSetup: true
+				]
+			)
+		}
 
-		addChildDevice(
-			"Nowhereville",
-			"Lantern",
-			lanternDeviceDNI(),
-			null,
-			[
-				isComponent: true,
-				name: "Magic Lantern - Lantern Device",
-				label: "Magic Lantern Device",
-				completedSetup: true
-			]
-		)
+		if(!lanternDevice()) {
+			addChildDevice(
+				"Nowhereville",
+				"Lantern",
+				lanternDeviceDNI(),
+				null,
+				[
+					isComponent   : true,
+					name          : "Magic Lantern - Lantern Device",
+					label         : "Magic Lantern Device",
+					completedSetup: true
+				]
+			)
+		}
 	} catch (e) {
 		log.error "Child device creation failed with error = ${e}"
 	}
@@ -149,7 +156,7 @@ def heaterSwitchDidChangeHandler(evt) {
 }
 
 def List childOn(dni)  {
-	logDebug("childOn dni=${dni}")
+	log.debug("childOn dni=${dni}")
 	switch (dni) {
 		case powerSwitchDNI():
 			lanternDevice().on()
