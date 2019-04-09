@@ -71,6 +71,17 @@ def setBrightness(Number brightness) {
 	[]
 }
 
+def setModePulse() {
+	sendEvent(name: "mode", value: "pulse")
+	logDebug( "MagicLantern set to pulse" )
+	sendPost("/api/mode/pulse", [mode: "pulse"])
+}
+
+def setModeStatic() {
+	sendEvent(name: "mode", value: "static")
+	logDebug( "MagicLantern set to static" )
+	sendPost("/api/mode/pulse", [mode: "static"])
+}
 
 def setModeCycle() {
 	sendEvent(name: "autocycle", value: "on")

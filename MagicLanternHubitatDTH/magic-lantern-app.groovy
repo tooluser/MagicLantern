@@ -38,7 +38,7 @@ def updated() {
 private def subscribe() {
 	log.debug "subscribed"
 	subscribe(temperatureSensor, "temperature", temperatureDidChangeHandler)
-	subscribe(heaterSwitch, "switch", switchDidChangeHandler)
+	subscribe(heaterSwitch, "switch", heaterSwitchDidChangeHandler)
 }
 
 def initialize() {
@@ -128,16 +128,23 @@ def temperatureDidChangeHandler(evt) {
 	log.debug("+++++ temperatureDidChangeHandler ${evt} - ${evt.name} - ${evt.value}")
 	if (temperatureModeOn()) {
 		if (evt.value >= 80 && evt.value < 100) {
-			lanternDevice().setBrightness(evt.value)
+			lanternDevice().setBrightness(brightnessForTemperature(evt.value))
 		} else {
 			lanternDevice().setBrightness(100)
-			lanternDevice().setModeFire()
+			// lanternDevice().setModeFire()
+			// Set mode pulse
 		}
 	}
 }
 
-def switchDidChangeHandler(evt) {
-
+def heaterSwitchDidChangeHandler(evt) {
+	log.debug("+++++ heaterSwitchDidChangeHandler ${evt} - ${evt.name} - ${evt.value}")
+	if (temperatureModeOn()) {
+		if (evt.value == "on") {
+			lanternDevice().setBrightness(100)
+			lanternDevice().setModeFire()
+		}
+	}
 }
 
 def List childOn(dni)  {
@@ -147,7 +154,6 @@ def List childOn(dni)  {
 			lanternDevice().on()
 			break
 		case fireModeSwitchDNI():
-			// implicitly turn on? I think so.
 			// Need to delay these? Perhaps.
 			lanternDevice().setBrightness(100)
 			lanternDevice().setModeFire()
@@ -180,6 +186,10 @@ def List childOff(dni)  {
 
 private temperatureModeOn() {
 	temperatureModeSwitch().currentValue("switch") == "on"
+}
+
+private brightnessForTemperature(temperature) {
+	temperature
 }
 
 private powerSwitchDNI() { "MagicLantern${app.id}-sw1" }
