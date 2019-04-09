@@ -8,17 +8,16 @@ definition(
 	iconX3Url: "")
 
 preferences {
-	section("Sensor") {
-		input("temperatureSensor", "capability.temperatureMeasurement",
-			title: "Temperature Sensor", multiple: false, required: true)
-		// input(name: "numberOption", type: "number", defaultValue: "10", range: "1..*", title: "", description: "", required: true)
-	}
-	section("Heater") {
-		input("heaterSwitch", "capability.switch",
-			title: "Heater Active", multiple: false, required: true)
-	}
 	section("Lantern") {
 		input "deviceIP", "text", title: "Lantern IP Address", description: "Device IP (e.g. 10.0.1.X)", required: true, defaultValue: "10.0.1.X"
+	}
+	section("Heating Sensors") {
+		input("temperatureSensor", "capability.temperatureMeasurement",
+			title: "Temperature Sensor", multiple: false, required: true)
+		input("heaterSwitch", "capability.switch",
+			title: "Heater Active", multiple: false, required: true)
+		input("heatedTemperatureThreshold", "integer", title: "Heated cutoff", description: "Temperature at which to consider heating complete",
+			multiple: false, required: true, defaultValue: 100)
 	}
 }
 
@@ -44,13 +43,12 @@ private def subscribe() {
 def initialize() {
 	log.debug "initialize"
 	log.debug "Temperature Sensor Linked: " + temperatureSensor
+	log.debug "Heater Switch Linked: " + heaterSwitch
 	createChildDevices()
 	getChildDevice()
 
 	// Push configuration to child
 	lanternDevice().setIPAddress(deviceIP)
-
-	// create child devices (switches: on/off, then a set: (fire mode, static mode, cycle mode). Turning one on turns the others off (Lantern does only one, but app turns off all others - is that by setting state, or ).
 }
 
 def uninstalled() {
@@ -127,12 +125,15 @@ private createChildDevices() {
 def temperatureDidChangeHandler(evt) {
 	log.debug("+++++ temperatureDidChangeHandler ${evt} - ${evt.name} - ${evt.value}")
 	if (temperatureModeOn()) {
-		if (evt.value >= 80 && evt.value < 100) {
+		if (evt.value >= 80 && evt.value < heatedTemperatureThreshold) {
 			lanternDevice().setBrightness(brightnessForTemperature(evt.value))
-		} else {
+		} else if (evt.value > heatedTemperatureThreshold) {
+			lanternDevice().setModePulse()
 			lanternDevice().setBrightness(100)
-			// lanternDevice().setModeFire()
-			// Set mode pulse
+		} else {
+			// Cold.
+			lanternDevice().setBrightness(23)
+			lanternDevice().setModeStatic()
 		}
 	}
 }
@@ -141,8 +142,8 @@ def heaterSwitchDidChangeHandler(evt) {
 	log.debug("+++++ heaterSwitchDidChangeHandler ${evt} - ${evt.name} - ${evt.value}")
 	if (temperatureModeOn()) {
 		if (evt.value == "on") {
-			lanternDevice().setBrightness(100)
 			lanternDevice().setModeFire()
+			lanternDevice().setBrightness(100)
 		}
 	}
 }
@@ -169,8 +170,6 @@ def List childOn(dni)  {
 		default:
 			break
 	}
-
-	// this."on${channelNumber(dni)}"()
 }
 
 def List childOff(dni)  {
