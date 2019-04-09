@@ -5,6 +5,18 @@
 #include <Restfully.h>
 #include "configuration.h"
 
+int handleEcho(RestRequest& request);
+int handlePowerOn(RestRequest& request);
+int handlePowerOff(RestRequest& request);
+int handleModeCycle(RestRequest& request);
+int handleModeCyclePause(RestRequest& request);
+int handleModeFire(RestRequest& request);
+int handleModeStatic(RestRequest& request);
+int handleModeOff(RestRequest& request);
+int handleBrightnessPOST(RestRequest& request);
+int handleBrightnessGET(RestRequest& request);
+void srv_handle_not_found();
+
 // With gratitude to kitesurfer's webserver example -  https://github.com/kitesurfer1404/WS2812FX/tree/master/examples
 
 // See https://github.com/esp8266/Arduino/issues/263
@@ -46,55 +58,6 @@ class OptionsRequestHandler : public RequestHandler {
       return true;
     }
 } optionsRequestHandler;
-
-void setup(){
-  Serial.begin(115200);
-  Serial.println("Starting...");
-
-  Serial.println("NeoPixel Ring initializing...");
-  setup_neopixel_ring();
-
-  Serial.println("Wifi initializing...");
-  setup_wifi();
-
-  Serial.println("HTTP server initializing...");
-  setup_http_server();
-
-  server.begin();
-  Serial.println("HTTP server started.");
-
-  if (!MDNS.begin(HOSTNAME)) {
-    Serial.println("Error setting up MDNS responder!");
-  }
-  Serial.print("mDNS responder started as "); Serial.print(HOSTNAME); Serial.println(".local");
-
-  Serial.println("ready!");
-}
-
-void loop() {
-  unsigned long now = millis();
-
-  server.handleClient();
-  neopixel_ring.service();
-
-  if(now - last_wifi_check_time > WIFI_TIMEOUT) {
-    Serial.print("Checking WiFi... ");
-    if(WiFi.status() != WL_CONNECTED) {
-      Serial.println("WiFi connection lost. Reconnecting...");
-      setup_wifi();
-    } else {
-      Serial.println("OK");
-    }
-    last_wifi_check_time = now;
-  }
-
-  if(cycle_mode_on && (now - cycle_last_change_time > 10000)) {
-    uint8_t next_mode = (neopixel_ring.getMode() + 1) % neopixel_ring.getModeCount();
-    neopixel_ring.setMode(next_mode);
-    Serial.print("mode is "); Serial.println(neopixel_ring.getModeName(neopixel_ring.getMode()));
-    cycle_last_change_time = now;
-  }
-}
 
 void setup_wifi() {
   Serial.println();
@@ -144,7 +107,7 @@ void setup_http_server() {
   server.onNotFound(srv_handle_not_found);
 
   restHandler.on("/api/brightness/:brightness(integer)", POST(handleBrightnessPOST));
-  restHandler.on("/api/brightness", GET(handleBrightnessGet));
+  restHandler.on("/api/brightness", GET(handleBrightnessGET));
 
   restHandler.on("/api/power/on", POST(handlePowerOn));
   restHandler.on("/api/power/off", POST(handlePowerOff));
@@ -154,6 +117,21 @@ void setup_http_server() {
   restHandler.on("/api/mode/fire", POST(handleModeFire));
   restHandler.on("/api/mode/static", POST(handleModeStatic));
   restHandler.on("/api/mode/off", POST(handleModeOff));
+	
+  restHandler.on("/api/echo/:msg(string|integer)", GET(handleEcho) );
+}
+
+int handleEcho(RestRequest& request) {
+  String s("Hello ");
+    auto msg = request["msg"];
+    if(msg.isString())
+      s += msg.toString();
+    else {
+      s += '#';
+      s += (long)msg;
+    }
+    request.response["reply"] = s;
+    return 200;
 }
 
 /**  Webserver Functions **/
@@ -211,7 +189,7 @@ int handleBrightnessPOST(RestRequest& request) {
   return 200;
 }
 
-int handleBrightnessGet(RestRequest& request) {
+int handleBrightnessGET(RestRequest& request) {
   Serial.println("brightness get");
   request.response["brightness"] = neopixel_ring.getBrightness();
   return 200;
@@ -222,4 +200,53 @@ void srv_handle_not_found() {
   Serial.print("URI not found: ");
   Serial.println(path);
   server.send(404, "text/plain", "File Not Found");
+}
+
+void setup(){
+  Serial.begin(115200);
+  Serial.println("Starting...");
+
+  Serial.println("NeoPixel Ring initializing...");
+  setup_neopixel_ring();
+
+  Serial.println("Wifi initializing...");
+  setup_wifi();
+
+  Serial.println("HTTP server initializing...");
+  setup_http_server();
+
+  server.begin();
+  Serial.println("HTTP server started.");
+
+  if (!MDNS.begin(HOSTNAME)) {
+    Serial.println("Error setting up MDNS responder!");
+  }
+  Serial.print("mDNS responder started as "); Serial.print(HOSTNAME); Serial.println(".local");
+
+  Serial.println("ready!");
+}
+
+void loop() {
+  unsigned long now = millis();
+
+  server.handleClient();
+  neopixel_ring.service();
+
+  if(now - last_wifi_check_time > WIFI_TIMEOUT) {
+    Serial.print("Checking WiFi... ");
+    if(WiFi.status() != WL_CONNECTED) {
+      Serial.println("WiFi connection lost. Reconnecting...");
+      setup_wifi();
+    } else {
+      Serial.println("OK");
+    }
+    last_wifi_check_time = now;
+  }
+
+  if(cycle_mode_on && (now - cycle_last_change_time > 10000)) {
+    uint8_t next_mode = (neopixel_ring.getMode() + 1) % neopixel_ring.getModeCount();
+    neopixel_ring.setMode(next_mode);
+    Serial.print("mode is "); Serial.println(neopixel_ring.getModeName(neopixel_ring.getMode()));
+    cycle_last_change_time = now;
+  }
 }
