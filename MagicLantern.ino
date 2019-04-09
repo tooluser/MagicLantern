@@ -12,6 +12,7 @@ int handleModeCycle(RestRequest& request);
 int handleModeCyclePause(RestRequest& request);
 int handleModeFire(RestRequest& request);
 int handleModeStatic(RestRequest& request);
+int handleModePulse(RestRequest& request);
 int handleModeOff(RestRequest& request);
 int handleBrightnessPOST(RestRequest& request);
 int handleBrightnessGET(RestRequest& request);
@@ -116,6 +117,7 @@ void setup_http_server() {
   restHandler.on("/api/mode/cycle/pause", POST(handleModeCyclePause));
   restHandler.on("/api/mode/fire", POST(handleModeFire));
   restHandler.on("/api/mode/static", POST(handleModeStatic));
+  restHandler.on("/api/mode/pulse", POST(handleModePulse));
   restHandler.on("/api/mode/off", POST(handleModeOff));
 	
   restHandler.on("/api/echo/:msg(string|integer)", GET(handleEcho) );
@@ -167,8 +169,16 @@ int handleModeFire(RestRequest& request) {
   return 200;
 }
 
+int handleModePulse(Request& request) {
+  cycle_mode_on = false;
+  neopixel_ring.setMode(FX_MODE_BREATH);
+  request.response["mode"] = "pulse";
+  return 200;
+}
+
 int handleModeStatic(RestRequest& request) {
   cycle_mode_on = false;
+  neopixel_ring.setMode(FX_MODE_STATIC);
   request.response["mode"] = "static";
   return 200;
 }
