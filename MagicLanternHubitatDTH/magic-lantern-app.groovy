@@ -151,19 +151,19 @@ def heaterSwitchDidChangeHandler(evt) {
 private configureForTemperatureMode() {
 	log.debug("[Configuring for temperature ${state.temperature} against threshold of ${heatedTemperatureThreshold}]")
 
-	if (heaterSwitchOn()) {
-		lanternDevice().setModeFire()
-		lanternDevice().setBrightness(brightnessForTemperature(state.temperature))
-		return
-	}
-
 	Integer threshold = heatedTemperatureThreshold as Integer
 	if (state.temperature > threshold) {
 		log.debug(" - [Fully heated, pulse]")
 		lanternDevice().setModePulse()
 		lanternDevice().setBrightness(100)
 	} else if (state.temperature >= 50 && state.temperature < threshold) {
-		log.debug(" - [Middle mode, brightness]")
+		if (heaterSwitchOn()) {
+			log.debug(" - [Middle mode, heating - fire]")
+			lanternDevice().setModeFire()
+		} else {
+			log.debug(" - [Middle mode, not heating - brightness]")
+			lantern.setModeStatic()
+		}
 		lanternDevice().setBrightness(brightnessForTemperature(state.temperature))
 	} else {
 		log.debug(" - [Cold]")
