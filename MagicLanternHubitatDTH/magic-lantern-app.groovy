@@ -25,6 +25,7 @@ def installed() {
 	log.debug "installed"
 	initialize()
 	subscribe()
+	setDefaultState()
 }
 
 def updated() {
@@ -231,3 +232,8 @@ private temperatureModeSwitch() { getChildDevice(temperatureModeSwitchDNI()) }
 
 private lanternDeviceDNI() { "MagicLantern${app.id}-lantern" }
 private lanternDevice() { getChildDevice(lanternDeviceDNI()) }
+
+private setDefaultState() {
+	state.temperature = 0
+	state.mode = "fire"
+}
