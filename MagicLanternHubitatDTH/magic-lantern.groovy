@@ -70,15 +70,11 @@ def setBrightness(Number brightness) {
 }
 
 def setModePulse() {
-	sendEvent(name: "mode", value: "pulse")
-	logDebug( "MagicLantern set to pulse" )
-	sendPost("/api/mode/pulse", [mode: "pulse"])
+	setLanternMode("pulse")
 }
 
 def setModeStatic() {
-	sendEvent(name: "mode", value: "static")
-	logDebug( "MagicLantern set to static" )
-	sendPost("/api/mode/static", [mode: "static"])
+	setLanternMode("static")
 }
 
 def setModeCycle() {
@@ -88,9 +84,13 @@ def setModeCycle() {
 }
 
 def setModeFire() {
-	sendEvent(name: "mode", value: "fire")
-	logDebug( "MagicLantern set to fire" )
-	sendPost("/api/mode/fire", [mode: "fire"])
+	setLanternMode("fire")
+}
+
+private setLanternMode(mode) {
+	sendEvent(name: "mode", value: mode)
+	logDebug( "MagicLantern set to ${mode}" )
+	sendPost("/api/mode/${mode}", [mode: mode])
 }
 
 private def sendPost(String path, Map bodyMap = [:]) {
@@ -138,15 +138,11 @@ def postCallbackMethod(response, data) {
 }
 
 def parse (response) {
-	// Parse data received back from this device
-
 	logDebug "Device responded with ${response}"
 }
 //
 private logDebug( debugText ){
-	// If debugging is enabled in settings, pass text to the logs
-
-	if( settings.logDebug ) {
+	if (settings.logDebug) {
 		log.info "MagicLantern (${settings.deviceIP}): ${debugText}"
 	}
 }
