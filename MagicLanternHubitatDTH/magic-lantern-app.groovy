@@ -153,7 +153,7 @@ private configureForTemperatureMode() {
 	log.debug("[Configuring for temperature ${state.temperature} against threshold of ${heatedTemperatureThreshold}]")
 
 	Integer threshold = heatedTemperatureThreshold as Integer
-	if (state.temperature > threshold) {
+	if (state.temperature >= threshold) {
 		log.debug(" - [Fully heated, pulse]")
 		lanternDevice().setModePulse()
 		lanternDevice().setBrightness(100)
