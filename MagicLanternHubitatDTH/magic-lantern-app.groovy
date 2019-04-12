@@ -190,8 +190,8 @@ def List childOn(dni)  {
 		case temperatureModeSwitchDNI():
 			state.mode = "temperature"
 			fireModeSwitch().off() // Yes this is generalizable. Shoot me.
+			configureForTemperatureMode()
 			lanternDevice().on()
-			// need to setBrightnessForTemperature here (which may be off)
 			break
 		default:
 			break
